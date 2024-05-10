@@ -78,11 +78,11 @@ app.use((req, res, next) => {
 });
 
 // Serve static files with additional headers for CORS and CORP
-// app.use('/uploads/videos', express.static(path.join(__dirname, 'uploads/videos'), {
-// 	setHeaders: (res, path) => {
-// 		res.set('Cross-Origin-Resource-Policy', 'cross-origin');
-// 	}
-// }));
+app.use('/uploads/videos', express.static(path.join(__dirname, 'uploads/videos'), {
+	setHeaders: (res, path) => {
+		res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+	}
+}));
 
 
 
