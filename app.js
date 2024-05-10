@@ -61,8 +61,8 @@ app.use(xss())
 // app.use(cors())
 
 app.use(cors({
-	origin: ['http://localhost:8080'],  // Replace with the origin of your client app
-	// origin: ['https://magical-elf-7f1d71.netlify.app'],
+	// origin: ['http://localhost:8080'],  // Replace with the origin of your client app
+	origin: ['https://vidream.netlify.app'],
 	methods: ['GET', 'POST', 'PUT'],
 	credentials: true
 }));
