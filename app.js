@@ -16,7 +16,7 @@ const errorHandler = require('./middleware/error')
 
 const DBConnection = require('./config/db')
 
-dotenv.config({ path: './config/.env' })
+dotenv.config({ path: '.env' })
 
 DBConnection()
 
@@ -58,7 +58,33 @@ app.use(helmet())
 app.use(xss())
 
 // Enable CORS
-app.use(cors())
+// app.use(cors())
+
+app.use(cors({
+	origin: ['http://localhost:8080'],  // Replace with the origin of your client app
+	// origin: ['https://magical-elf-7f1d71.netlify.app'],
+	methods: ['GET', 'POST', 'PUT'],
+	credentials: true
+}));
+
+app.use((req, res, next) => {
+	res.header("Cross-Origin-Resource-Policy", "cross-origin");
+	next();
+});
+
+app.use((req, res, next) => {
+	res.header("Cross-Origin-Embedder-Policy", "require-corp");
+	next();
+});
+
+// Serve static files with additional headers for CORS and CORP
+// app.use('/uploads/videos', express.static(path.join(__dirname, 'uploads/videos'), {
+// 	setHeaders: (res, path) => {
+// 		res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+// 	}
+// }));
+
+
 
 // Rate limiting
 // const limiter = rateLimit({

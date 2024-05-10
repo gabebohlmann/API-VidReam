@@ -36,6 +36,10 @@ const VideoSchema = new Schema(
       type: mongoose.Schema.ObjectId,
       ref: 'User',
       required: true
+    },
+    bunnyStreamId: {
+      type: String,
+      required: false
     }
   },
   { toJSON: { virtuals: true }, toObject: { virtuals: true }, timestamps: true }

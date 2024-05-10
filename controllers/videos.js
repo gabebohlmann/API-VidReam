@@ -5,6 +5,9 @@ const ErrorResponse = require('../utils/errorResponse')
 
 const Video = require('../models/Video')
 
+// For Bunny Stream
+const fetch = require('node-fetch')
+
 // @desc    Get videos
 // @route   GET /api/v1/videos/public or /api/v1/videos/private
 // @access  Public Or Private
@@ -52,8 +55,7 @@ exports.videoUpload = asyncHandler(async (req, res, next) => {
     await videoModel.remove()
     return next(
       new ErrorResponse(
-        `Please upload a video less than ${
-          (process.env.MAX_FILE_UPLOAD * 5) / 1000 / 1000
+        `Please upload a video less than ${(process.env.MAX_FILE_UPLOAD * 5) / 1000 / 1000
         }mb`,
         404
       )
@@ -83,6 +85,48 @@ exports.videoUpload = asyncHandler(async (req, res, next) => {
       res.status(200).json({ success: true, data: videoModel })
     }
   )
+  const bunnyUrlLib = `https://video.bunnycdn.com/library/${process.env.BUNNY_STREAM_LIBRARY_ID}/videos`;
+  const optionsLib = {
+    method: 'POST',
+    headers: {
+      accept: 'application/json',
+      'content-type': 'application/json',
+      AccessKey: process.env.BUNNY_STREAM_KEY
+    },
+    body: JSON.stringify({ title: video.name })
+  };
+
+  const response = await fetch(bunnyUrlLib, optionsLib);
+  const json = await response.json();
+  console.log(json)
+  console.log(`Bunny Stream ID${json.guid}`)
+  bunnyStreamVideoId = json.guid
+
+  videoModel = await Video.findByIdAndUpdate(
+    videoModel._id,
+    {
+      bunnyStreamId: bunnyStreamVideoId
+    },
+    { new: true, runValidators: true }
+  )
+
+  const localPath = `${process.env.FILE_UPLOAD_PATH}/videos/${video.name}`
+  const buffer = fs.createReadStream(localPath);
+
+  const bunnyUrlVid = `https://video.bunnycdn.com/library/${process.env.BUNNY_STREAM_LIBRARY_ID}/videos/${json.guid}`;
+  const optionsVid = {
+    method: 'PUT',
+    headers: {
+      accept: 'application/json',
+      AccessKey: process.env.BUNNY_STREAM_KEY
+    },
+    body: buffer
+  };
+
+  fetch(bunnyUrlVid, optionsVid)
+    .then(res => res.json())
+    .then(json => console.log(json))
+    .catch(err => console.error('error:' + err));
 })
 
 // @desc    Update video
@@ -137,8 +181,7 @@ exports.uploadVideoThumbnail = asyncHandler(async (req, res, next) => {
   if (file.size > process.env.MAX_FILE_UPLOAD) {
     return next(
       new ErrorResponse(
-        `Please upload an image less than ${
-          process.env.MAX_FILE_UPLOAD / 1000 / 1000
+        `Please upload an image less than ${process.env.MAX_FILE_UPLOAD / 1000 / 1000
         }mb`,
         404
       )
